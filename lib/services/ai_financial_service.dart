@@ -42,7 +42,7 @@ Consider:
     required List<String> preferredSectors,
   }) async {
     try {
-      final apiKey = await storage.read(key: 'AIzaSyBZVc6ezsL6kFgLs6bgD0jZUXFOy9HF90A');
+      final apiKey = await storage.read(key: 'AIzaSyDm8A18yURmiRECFiI47Bn9zcTDGwNF2n0');
       if (apiKey == null) throw Exception('API key not found');
 
       // Get market data from Cruxor

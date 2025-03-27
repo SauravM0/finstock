@@ -7,15 +7,23 @@ import 'providers/app_state.dart';
 import 'services/ai_financial_service.dart';
 import 'providers/ai_financial_provider.dart';
 import 'screen/ai_financial_screen.dart';
+import 'services/investment_agent_service.dart';
+import 'providers/investment_agent_provider.dart';
+import 'screen/ai_investment_agent_screen.dart';
+import 'services/api_key_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Get the Gemini API key from secure storage
+  final geminiApiKey = await ApiKeyService.getGeminiApiKey();
+  
   runApp(
     MultiProvider(
       providers: [
         Provider<AIFinancialService>(
           create: (_) => AIFinancialService(
-            geminiApiKey: 'YOUR_GEMINI_API_KEY',
+            geminiApiKey: geminiApiKey,
           ),
         ),
         ChangeNotifierProxyProvider<AIFinancialService, AIFinancialProvider>(
@@ -26,16 +34,33 @@ void main() {
             aiService: aiService,
           ),
         ),
+        Provider<InvestmentAgentService>(
+          create: (_) => InvestmentAgentService(
+            apiKey: geminiApiKey,
+          ),
+        ),
+        ChangeNotifierProxyProvider<InvestmentAgentService, InvestmentAgentProvider>(
+          create: (context) => InvestmentAgentProvider(
+            service: context.read<InvestmentAgentService>(),
+          ),
+          update: (context, service, previous) => InvestmentAgentProvider(
+            service: service,
+          ),
+        ),
       ],
       child: ChangeNotifierProvider(
         create: (_) => AppState(),
-        child: MyApp(),
+        child: MyApp(geminiApiKey: geminiApiKey),
       ),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
+  final String geminiApiKey;
+  
+  const MyApp({Key? key, required this.geminiApiKey}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -56,7 +81,9 @@ class MyApp extends StatelessWidget {
       home: LoginScreen(),
       routes: {
         '/home': (context) => HomeScreen(),
-        '/market': (context) => MarketScreen(), // Added MarketScreen route
+        '/market': (context) => MarketScreen(),
+        '/ai_financial': (context) => AIFinancialScreen(geminiApiKey: geminiApiKey),
+        '/investment_agent': (context) => AIInvestmentAgentScreen(),
       },
     );
   }

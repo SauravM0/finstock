@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'portfolio_screen.dart';
 import 'market_screen.dart';
 import 'ai_advisor_screen.dart';
 import 'settings_screen.dart';
+import 'ai_investment_agent_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,21 +13,50 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  // TODO: Store this in a secure environment variable or configuration file
-  // Get your API key from: https://makersuite.google.com/app/apikey
-  final String _geminiApiKey = 'AIzaSyDVdoSvSUTP9xxYpsEBDVGAu0zkUUpMmDA'; // Replace with your actual API key
-
+  final _storage = FlutterSecureStorage();
   late final List<Widget> _screens;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _screens = [
-      PortfolioScreen(),
-      MarketScreen(),
-      AIAdvisorScreen(geminiApiKey: _geminiApiKey),
-      SettingsScreen(),
-    ];
+    _initializeScreens();
+  }
+
+  Future<void> _initializeScreens() async {
+    try {
+      // Initialize screens
+      _screens = [
+        PortfolioScreen(),
+        MarketScreen(),
+        AIAdvisorScreen(),
+        AIInvestmentAgentScreen(),
+        SettingsScreen(),
+      ];
+      
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      print('Error initializing screens: $e');
+      
+      // Fallback initialization
+      _screens = [
+        PortfolioScreen(),
+        MarketScreen(),
+        AIAdvisorScreen(),
+        AIInvestmentAgentScreen(),
+        SettingsScreen(),
+      ];
+      
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }
   }
 
   void _onItemTapped(int index) {
@@ -34,6 +65,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -49,6 +88,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.assistant),
             label: 'AI Advisor',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics),
+            label: 'Investment Agent',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
