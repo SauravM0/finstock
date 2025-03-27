@@ -1,35 +1,61 @@
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'dart:convert';
 
 class MarketDataService {
-  final String apiKey = 'cv8ig5pr01qqdqh68d60cv8ig5pr01qqdqh68d6g'; // Replace with your Finnhub API key
-  late WebSocketChannel channel;
+  WebSocketChannel? _channel;
+  Function(Map<String, dynamic>)? _onDataCallback;
 
-  MarketDataService() {
-    // Connect to Finnhub's WebSocket
-    channel = WebSocketChannel.connect(
-      Uri.parse('wss://ws.finnhub.io?token=$apiKey'),
-    );
-    print('Connected to Finnhub WebSocket');
+  Future<void> initialize() async {
+    try {
+      _channel = WebSocketChannel.connect(
+        Uri.parse('wss://stream.binance.com:9443/ws/btcusdt@trade'),
+      );
+      
+      _channel?.stream.listen(
+        (data) {
+          if (_onDataCallback != null) {
+            _onDataCallback!(data as Map<String, dynamic>);
+          }
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+        },
+        onDone: () {
+          print('WebSocket connection closed');
+        },
+      );
+    } catch (e) {
+      print('Failed to initialize WebSocket: $e');
+      rethrow;
+    }
   }
 
-  // Subscribe to a stock or crypto symbol (e.g., "AAPL" for Apple)
-  void subscribeToSymbol(String symbol) {
-    channel.sink.add(jsonEncode({"type": "subscribe", "symbol": symbol}));
-    print('Subscribed to $symbol');
-  }
+  Future<void> subscribeToSymbol(String symbol) async {
+    if (_channel == null) {
+      throw Exception('WebSocket not initialized');
+    }
 
-  // Listen for updates and pass them to a callback function
-  void listenForUpdates(Function(dynamic) onData) {
-    channel.stream.listen((message) {
-      final data = jsonDecode(message);
-      onData(data);
+    // Unsubscribe from previous symbol if any
+    _channel?.sink.add({
+      'method': 'UNSUBSCRIBE',
+      'params': ['btcusdt@trade'],
+      'id': 1,
+    });
+
+    // Subscribe to new symbol
+    _channel?.sink.add({
+      'method': 'SUBSCRIBE',
+      'params': ['${symbol.toLowerCase()}@trade'],
+      'id': 2,
     });
   }
 
-  // Clean up by closing the connection
+  void listenForUpdates(Function(Map<String, dynamic>) callback) {
+    _onDataCallback = callback;
+  }
+
   void dispose() {
-    channel.sink.close();
-    print('WebSocket connection closed');
+    _channel?.sink.close();
+    _channel = null;
+    _onDataCallback = null;
   }
 }

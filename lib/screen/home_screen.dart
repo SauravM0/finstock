@@ -11,13 +11,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  // TODO: Store this in a secure environment variable or configuration file
+  // Get your API key from: https://makersuite.google.com/app/apikey
+  final String _geminiApiKey = 'AIzaSyDVdoSvSUTP9xxYpsEBDVGAu0zkUUpMmDA'; // Replace with your actual API key
 
-  final List<Widget> _screens = [
-    PortfolioScreen(),
-    MarketScreen(),
-    AIAdvisorScreen(),
-    SettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      PortfolioScreen(),
+      MarketScreen(),
+      AIAdvisorScreen(geminiApiKey: _geminiApiKey),
+      SettingsScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
@@ -50,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

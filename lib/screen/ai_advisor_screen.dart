@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'ai_chatbot_screen.dart';
 
 class AIAdvisorScreen extends StatelessWidget {
+  final String geminiApiKey;
+
+  const AIAdvisorScreen({
+    Key? key,
+    required this.geminiApiKey,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,7 +47,13 @@ class AIAdvisorScreen extends StatelessWidget {
           SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => Navigator.push(
-                context, MaterialPageRoute(builder: (context) => AIChatbotScreen())),
+              context,
+              MaterialPageRoute(
+                builder: (context) => AIChatbotScreen(
+                  geminiApiKey: geminiApiKey,
+                ),
+              ),
+            ),
             child: Text('Ask AI'),
           ),
         ],
