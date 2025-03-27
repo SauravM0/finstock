@@ -25,6 +25,9 @@ class MarketDataService {
 
     // Initial data fetch
     await _refreshMarketData(apiKey);
+
+    // Subscribe to market data updates
+    await subscribeToSymbol('btcusdt');
   }
 
   Future<void> _refreshMarketData(String apiKey) async {
@@ -111,6 +114,10 @@ class MarketDataService {
     } else {
       throw Exception('Failed to fetch market news');
     }
+  }
+
+  Future<void> subscribeToSymbol(String symbol) async {
+    // Implementation of subscribing to a symbol
   }
 
   void dispose() {

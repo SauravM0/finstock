@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AIFinancialService {
-  static const String _baseUrl = 'YOUR_CRUXOR_API_BASE_URL';
+  static const String _baseUrl = 'https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=AIzaSyBZVc6ezsL6kFgLs6bgD0jZUXFOy9HF90A';
   final GenerativeModel _model;
   final storage = FlutterSecureStorage();
 
@@ -42,7 +42,7 @@ Consider:
     required List<String> preferredSectors,
   }) async {
     try {
-      final apiKey = await storage.read(key: 'cruxor_api_key');
+      final apiKey = await storage.read(key: 'AIzaSyBZVc6ezsL6kFgLs6bgD0jZUXFOy9HF90A');
       if (apiKey == null) throw Exception('API key not found');
 
       // Get market data from Cruxor
