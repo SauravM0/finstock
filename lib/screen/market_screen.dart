@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/market_data_service.dart';
 import '../providers/app_state.dart';
-import '../widgets/trading_view_widget.dart';
+import '../widgets/trading_view_mobile_widget.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MarketScreen extends StatefulWidget {
@@ -19,15 +19,8 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
   Map<String, dynamic> liveMarketData = {};
   int refreshCounter = 0; // Used to force refresh TradingViewWidget
   bool isRefreshing = false;
-  bool isCachedData = false;
   bool isMockData = false;
   String lastUpdated = '';
-  String _selectedSymbol = 'AAPL';
-  String _timeframe = '1D';
-  Map<String, dynamic>? _currentChartData;
-  bool _isPositiveChange = false;
-  final List<String> _availableSymbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'BTC/USD', 'ETH/USD'];
-  final List<String> _timeframes = ['1D', '1W', '1M', '3M', '1Y', '5Y'];
   final _storage = FlutterSecureStorage();
 
   @override
@@ -39,12 +32,9 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
   }
 
   Future<void> _initializeMarketData() async {
-    if (isRefreshing) return; // Prevent multiple simultaneous refreshes
-
     try {
       setState(() {
-        isLoading = !isRefreshing; // Only show full screen loader on initial load
-        isRefreshing = true;
+        isLoading = true;
         error = null;
       });
 
@@ -57,12 +47,10 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
           // Handle real-time market data updates
           setState(() {
             liveMarketData = data;
-            isCachedData = data['isCached'] == true;
             isMockData = data['isMock'] == true;
             lastUpdated = DateTime.now().toString().substring(0, 19); // Format: YYYY-MM-DD HH:MM:SS
             refreshCounter++; // Increment to force refresh
             isLoading = false;
-            isRefreshing = false;
           });
           print('Received market data update: ${data.keys.toString()}');
         },
@@ -70,7 +58,6 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
           setState(() {
             error = e.toString();
             isLoading = false;
-            isRefreshing = false;
           });
           print('Market data stream error: $e');
         },
@@ -93,39 +80,9 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
         setState(() {
           error = e.toString();
           isLoading = false;
-          isRefreshing = false;
         });
       }
       print('Error initializing market data: $e');
-    }
-  }
-
-  Future<void> _refreshSymbol(String symbol) async {
-    try {
-      setState(() {
-        isRefreshing = true;
-      });
-      
-      await _marketDataService.subscribeToSymbol(symbol.toLowerCase());
-      print('Subscribed to symbol: $symbol');
-      
-      setState(() {
-        isRefreshing = false;
-      });
-    } catch (e) {
-      setState(() {
-        isRefreshing = false;
-      });
-      print('Error subscribing to symbol: $e');
-      
-      // Show a snackbar with the error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to subscribe to $symbol: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
     }
   }
 
@@ -140,32 +97,29 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     
     try {
       if (currentTab == 0) {
-        // Refresh stocks
-        await _refreshSymbol('AAPL');
+        // Refresh stocks (increment the counter to force TradingView refresh)
+        setState(() {
+          refreshCounter++;
+        });
       } else if (currentTab == 1) {
         // Refresh crypto
-        await _refreshSymbol('BTCUSDT');
+        setState(() {
+          refreshCounter++;
+        });
       } else if (currentTab == 2) {
         // Refresh news
         final news = await _marketDataService.getMarketNews();
         setState(() {
           marketNews = news;
-          isRefreshing = false;
         });
       }
     } catch (e) {
+      print('Error refreshing: $e');
+    } finally {
       setState(() {
         isRefreshing = false;
+        lastUpdated = DateTime.now().toString().substring(0, 19);
       });
-      
-      // Show a snackbar with the error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to refresh: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
     }
   }
 
@@ -198,14 +152,6 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                 child: Icon(Icons.data_array, color: Colors.orange),
               ),
             ),
-          if (isCachedData)
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Tooltip(
-                message: 'Using cached data',
-                child: Icon(Icons.cloud_off, color: Colors.amber),
-              ),
-            ),
           IconButton(
             icon: isRefreshing
                 ? SizedBox(
@@ -217,7 +163,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                     ),
                   )
                 : Icon(Icons.refresh),
-            onPressed: isRefreshing ? null : _initializeMarketData,
+            onPressed: isRefreshing ? null : _refreshCurrentTab,
           ),
         ],
       ),
@@ -230,9 +176,9 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildStocksTab(),
-                      _buildCryptoTab(),
-                      _buildNewsTab(),
+                      _buildStocksTab(key: PageStorageKey('stocks-tab')),
+                      _buildCryptoTab(key: PageStorageKey('crypto-tab')),
+                      _buildNewsTab(key: PageStorageKey('news-tab')),
                     ],
                   ),
                 ),
@@ -267,20 +213,8 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                 error = null;
                 isLoading = false;
                 isMockData = true;
-                liveMarketData = {
-                  'stocks': {
-                    'c': 147.56, // current price
-                    'h': 148.21, // high price
-                    'l': 146.08, // low price
-                    'o': 146.35, // open price
-                    'pc': 146.18, // previous close
-                    'dp': 0.95, // percent change
-                  },
-                  'time': DateTime.now().millisecondsSinceEpoch,
-                  'isMock': true
-                };
-                lastUpdated = DateTime.now().toString().substring(0, 19);
                 refreshCounter++;
+                lastUpdated = DateTime.now().toString().substring(0, 19);
               });
             },
             child: Text('Continue with Demo Data'),
@@ -290,19 +224,20 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildStocksTab() {
+  Widget _buildStocksTab({Key? key}) {
     return ListView(
+      key: key,
       physics: AlwaysScrollableScrollPhysics(), // Ensure pull-to-refresh works
       children: [
         if (lastUpdated.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Last updated: $lastUpdated${isCachedData ? ' (Cached)' : ''}${isMockData ? ' (Demo)' : ''}',
+              'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
               style: TextStyle(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
-                color: isMockData ? Colors.orange : (isCachedData ? Colors.amber : Colors.grey),
+                color: isMockData ? Colors.orange : Colors.grey,
               ),
               textAlign: TextAlign.center,
             ),
@@ -314,114 +249,84 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-        _buildStockCard('AAPL', 'Apple Inc.'),
-        SizedBox(height: 16),
-        _buildStockCard('MSFT', 'Microsoft Corporation'),
-        SizedBox(height: 16),
-        _buildStockCard('GOOGL', 'Alphabet Inc.'),
+        
+        // Stock chart
+        Container(
+          height: 350,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'S&P 500',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  SizedBox(height: 8),
+                  Expanded(
+                    child: TradingViewMobileWidget(
+                      symbol: 'SPY',
+                      isStockChart: true,
+                      useMockData: isMockData,
+                      liveData: liveMarketData,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        // Additional stock charts would follow here
+        Container(
+          height: 350,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Apple Inc.',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  SizedBox(height: 8),
+                  Expanded(
+                    child: TradingViewMobileWidget(
+                      symbol: 'AAPL',
+                      isStockChart: true,
+                      useMockData: isMockData,
+                      liveData: liveMarketData,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildStockCard(String symbol, String name) {
-    // Extract stock data if available
-    final stockPrice = liveMarketData.containsKey('stocks') 
-      ? liveMarketData['stocks']['c']?.toString() ?? 'N/A' 
-      : 'N/A';
-    
-    final stockChange = liveMarketData.containsKey('stocks') 
-      ? liveMarketData['stocks']['dp']?.toString() ?? '0.0' 
-      : '0.0';
-    
-    final isPositiveChange = (double.tryParse(stockChange) ?? 0) >= 0;
-    
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        children: [
-          ListTile(
-            title: Row(
-              children: [
-                Text(name),
-                if (isMockData)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Tooltip(
-                      message: 'Demo data',
-                      child: Icon(Icons.info_outline, size: 16, color: Colors.orange),
-                    ),
-                  ),
-              ],
-            ),
-            subtitle: Text(symbol),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (stockPrice != 'N/A')
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '\$$stockPrice',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isPositiveChange ? Icons.arrow_upward : Icons.arrow_downward,
-                            color: isPositiveChange ? Colors.green : Colors.red,
-                            size: 14,
-                          ),
-                          Text(
-                            '$stockChange%',
-                            style: TextStyle(
-                              color: isPositiveChange ? Colors.green : Colors.red,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.refresh),
-                  onPressed: isRefreshing ? null : () => _refreshSymbol(symbol),
-                ),
-              ],
-            ),
-          ),
-          // Use a key derived from refreshCounter to force rebuild when data changes
-          TradingViewWidget(
-            key: Key('$symbol-$refreshCounter'),
-            symbol: symbol,
-            isStockChart: true,
-            height: 400,
-            liveData: liveMarketData['stocks'],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCryptoTab() {
+  Widget _buildCryptoTab({Key? key}) {
     return ListView(
+      key: key,
       physics: AlwaysScrollableScrollPhysics(), // Ensure pull-to-refresh works
       children: [
         if (lastUpdated.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Last updated: $lastUpdated${isCachedData ? ' (Cached)' : ''}${isMockData ? ' (Demo)' : ''}',
+              'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
               style: TextStyle(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
-                color: isMockData ? Colors.orange : (isCachedData ? Colors.amber : Colors.grey),
+                color: isMockData ? Colors.orange : Colors.grey,
               ),
               textAlign: TextAlign.center,
             ),
@@ -429,103 +334,78 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
         Padding(
           padding: EdgeInsets.all(8.0),
           child: Text(
-            'Cryptocurrency Markets',
+            'Cryptocurrencies',
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-        _buildCryptoCard('BTCUSDT', 'Bitcoin'),
-        SizedBox(height: 16),
-        _buildCryptoCard('ETHUSDT', 'Ethereum'),
-      ],
-    );
-  }
-
-  Widget _buildCryptoCard(String symbol, String name) {
-    // Try to find price in liveMarketData
-    String price = 'N/A';
-    bool hasLivePrice = false;
-    
-    // Check in old format
-    if (liveMarketData.containsKey('p')) {
-      price = double.tryParse(liveMarketData['p']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00';
-      hasLivePrice = true;
-    } 
-    // Check in new format
-    else if (liveMarketData.containsKey('data') && 
-        liveMarketData['data'] is List && 
-        (liveMarketData['data'] as List).isNotEmpty) {
-      var data = liveMarketData['data'][0];
-      if (data != null && data.containsKey('p')) {
-        price = double.tryParse(data['p']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00';
-        hasLivePrice = true;
-      }
-    }
-    
-    // For mock data, show a sample price
-    if (isMockData && !hasLivePrice) {
-      price = symbol.contains('BTC') ? '29,348.75' : '1,897.32';
-      hasLivePrice = true;
-    }
-    
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        children: [
-          ListTile(
-            title: Row(
-              children: [
-                Text(name),
-                if (isMockData)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Tooltip(
-                      message: 'Demo data',
-                      child: Icon(Icons.info_outline, size: 16, color: Colors.orange),
-                    ),
-                  ),
-              ],
-            ),
-            subtitle: Text(symbol),
-            trailing: IconButton(
-              icon: Icon(Icons.refresh),
-              onPressed: isRefreshing ? null : () => _refreshSymbol(symbol),
-            ),
-          ),
-          // Display the latest price if available
-          if (hasLivePrice)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        
+        // Bitcoin chart
+        Container(
+          height: 350,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Latest Price:'),
                   Text(
-                    '\$$price',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                    'Bitcoin (BTC)',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  SizedBox(height: 8),
+                  Expanded(
+                    child: TradingViewMobileWidget(
+                      symbol: 'BTC',
+                      isStockChart: false,
+                      useMockData: isMockData,
+                      liveData: liveMarketData,
                     ),
                   ),
                 ],
               ),
             ),
-          // Use a key derived from refreshCounter to force rebuild when data changes
-          TradingViewWidget(
-            key: Key('$symbol-$refreshCounter'),
-            symbol: symbol,
-            isStockChart: false,
-            height: 400,
-            liveData: liveMarketData,
-            useMockData: isMockData,
           ),
-        ],
-      ),
+        ),
+        
+        // Ethereum chart
+        Container(
+          height: 350,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Ethereum (ETH)',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  SizedBox(height: 8),
+                  Expanded(
+                    child: TradingViewMobileWidget(
+                      symbol: 'ETH',
+                      isStockChart: false,
+                      useMockData: isMockData,
+                      liveData: liveMarketData,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildNewsTab() {
+  Widget _buildNewsTab({Key? key}) {
     if (marketNews.isEmpty) {
       return Center(
+        key: key,
         child: isRefreshing
             ? CircularProgressIndicator()
             : Column(
@@ -566,6 +446,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     }
     
     return ListView.builder(
+      key: key,
       physics: AlwaysScrollableScrollPhysics(), // Ensure pull-to-refresh works
       itemCount: marketNews.length + 1, // +1 for the header
       itemBuilder: (context, index) {
@@ -584,11 +465,11 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(
-                      'Last updated: $lastUpdated${isCachedData ? ' (Cached)' : ''}${isMockData ? ' (Demo)' : ''}',
+                      'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
                       style: TextStyle(
                         fontSize: 12,
                         fontStyle: FontStyle.italic,
-                        color: isMockData ? Colors.orange : (isCachedData ? Colors.amber : Colors.grey),
+                        color: isMockData ? Colors.orange : Colors.grey,
                       ),
                     ),
                   ),
@@ -674,57 +555,6 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
       });
     } catch (e) {
       print('Error loading preferences: $e');
-    } finally {
-      _fetchMarketData();
     }
-  }
-
-  Future<void> _fetchMarketData() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final data = await _marketDataService.getMarketData(_selectedSymbol, _timeframe, useMockData: isMockData);
-      
-      setState(() {
-        _currentChartData = data;
-        isLoading = false;
-        
-        // Determine if the change is positive or negative
-        double? lastClose = data['close'] != null ? 
-            (data['close'] as List<dynamic>).last as double? : null;
-        double? firstClose = data['close'] != null && (data['close'] as List<dynamic>).isNotEmpty ? 
-            (data['close'] as List<dynamic>).first as double? : null;
-            
-        if (lastClose != null && firstClose != null) {
-          _isPositiveChange = lastClose > firstClose;
-        } else {
-          _isPositiveChange = false;
-        }
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load market data: $e')),
-      );
-    }
-  }
-
-  void _changeSymbol(String symbol) {
-    setState(() {
-      _selectedSymbol = symbol;
-    });
-    _fetchMarketData();
-  }
-
-  void _changeTimeframe(String timeframe) {
-    setState(() {
-      _timeframe = timeframe;
-    });
-    _fetchMarketData();
   }
 }

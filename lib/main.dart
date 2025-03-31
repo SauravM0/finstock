@@ -7,16 +7,27 @@ import 'providers/app_state.dart';
 import 'services/ai_financial_service.dart';
 import 'providers/ai_financial_provider.dart';
 import 'screen/ai_financial_screen.dart';
+import 'services/api_key_service.dart';
 import 'services/investment_agent_service.dart';
 import 'providers/investment_agent_provider.dart';
 import 'screen/ai_investment_agent_screen.dart';
-import 'services/api_key_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Get the Gemini API key from secure storage
   final geminiApiKey = await ApiKeyService.getGeminiApiKey();
+  
+  // Only validate if the key is not empty
+  bool isValidApiKey = false;
+  if (geminiApiKey.isNotEmpty) {
+    isValidApiKey = await ApiKeyService.validateGeminiApiKey(geminiApiKey);
+    if (!isValidApiKey) {
+      print('Warning: Gemini API key validation failed. Some AI features may not work correctly.');
+    }
+  } else {
+    print('No Gemini API key provided. AI features will not be available.');
+  }
   
   runApp(
     MultiProvider(
@@ -50,7 +61,7 @@ void main() async {
       ],
       child: ChangeNotifierProvider(
         create: (_) => AppState(),
-        child: MyApp(geminiApiKey: geminiApiKey),
+        child: MyApp(geminiApiKey: geminiApiKey, hasValidApiKey: isValidApiKey),
       ),
     ),
   );
@@ -58,8 +69,9 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final String geminiApiKey;
+  final bool hasValidApiKey;
   
-  const MyApp({Key? key, required this.geminiApiKey}) : super(key: key);
+  const MyApp({Key? key, required this.geminiApiKey, required this.hasValidApiKey}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
