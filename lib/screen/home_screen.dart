@@ -4,7 +4,7 @@ import 'portfolio_screen.dart';
 import 'market_screen.dart';
 import 'ai_advisor_screen.dart';
 import 'settings_screen.dart';
-import 'ai_investment_agent_screen.dart';
+import 'portfolio_suggestions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
         PortfolioScreen(),
         MarketScreen(),
         AIAdvisorScreen(),
-        AIInvestmentAgentScreen(),
+        PortfolioSuggestionsScreen(),
         SettingsScreen(),
       ];
       
@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
         PortfolioScreen(),
         MarketScreen(),
         AIAdvisorScreen(),
-        AIInvestmentAgentScreen(),
+        PortfolioSuggestionsScreen(),
         SettingsScreen(),
       ];
       
@@ -90,8 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'AI Advisor',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Investment Agent',
+            icon: Icon(Icons.auto_awesome),
+            label: 'Portfolio AI',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

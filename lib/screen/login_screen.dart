@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Icon(Icons.account_balance_wallet, size: 80, color: Colors.white),
                   SizedBox(height: 16),
                   Text(
-                    'Finance AI',
+                    'Finstock',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,

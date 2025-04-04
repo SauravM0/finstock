@@ -244,71 +244,85 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
   }
 
   Widget _buildStocksTab({Key? key}) {
-    return ListView(
+    return ListView.builder(
       key: key,
       physics: AlwaysScrollableScrollPhysics(), // Ensure pull-to-refresh works
-      children: [
-        if (lastUpdated.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
-              style: TextStyle(
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-                color: isMockData ? Colors.orange : Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text(
-            'Popular Stocks',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-        
-        // Tradable stocks list
-        ...tradableStocks.map((stock) => _buildTradableAssetCard(
-          symbol: stock['symbol'],
-          name: stock['name'],
-          price: stock['price'],
-          isStock: true,
-        )),
-        
-        // Stock chart
-        Container(
-          height: 350,
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Card(
-            elevation: 4,
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'S&P 500',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  SizedBox(height: 8),
-                  Expanded(
-                    child: TradingViewMobileWidget(
-                      symbol: 'SPY',
-                      isStockChart: true,
-                      useMockData: isMockData,
-                      liveData: liveMarketData,
+      itemCount: tradableStocks.length + 3, // stocks + header + 2 charts
+      itemBuilder: (context, index) {
+        // Header with last updated
+        if (index == 0) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (lastUpdated.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: isMockData ? Colors.orange : Colors.grey,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                ],
+                ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Popular Stocks',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+            ],
+          );
+        }
+        
+        // Stocks
+        if (index > 0 && index <= tradableStocks.length) {
+          final stock = tradableStocks[index - 1];
+          return _buildTradableAssetCard(
+            symbol: stock['symbol'],
+            name: stock['name'],
+            price: stock['price'],
+            isStock: true,
+          );
+        }
+        
+        // S&P 500 chart
+        if (index == tradableStocks.length + 1) {
+          return Container(
+            height: 350,
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'S&P 500',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    SizedBox(height: 8),
+                    Expanded(
+                      child: TradingViewMobileWidget(
+                        symbol: 'SPY',
+                        isStockChart: true,
+                        useMockData: isMockData,
+                        liveData: liveMarketData,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }
         
-        // Additional stock charts
-        Container(
+        // Apple chart
+        return Container(
           height: 350,
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Card(
@@ -335,77 +349,91 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
               ),
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildCryptoTab({Key? key}) {
-    return ListView(
+    return ListView.builder(
       key: key,
       physics: AlwaysScrollableScrollPhysics(), // Ensure pull-to-refresh works
-      children: [
-        if (lastUpdated.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
-              style: TextStyle(
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-                color: isMockData ? Colors.orange : Colors.grey,
+      itemCount: tradableCrypto.length + 3, // crypto + header + 2 charts
+      itemBuilder: (context, index) {
+        // Header with last updated
+        if (index == 0) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (lastUpdated.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Last updated: $lastUpdated${isMockData ? ' (Demo)' : ''}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: isMockData ? Colors.orange : Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Cryptocurrencies',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text(
-            'Cryptocurrencies',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
+            ],
+          );
+        }
         
-        // Tradable crypto list
-        ...tradableCrypto.map((crypto) => _buildTradableAssetCard(
-          symbol: crypto['symbol'],
-          name: crypto['name'],
-          price: crypto['price'],
-          isStock: false,
-        )),
+        // Crypto assets
+        if (index > 0 && index <= tradableCrypto.length) {
+          final crypto = tradableCrypto[index - 1];
+          return _buildTradableAssetCard(
+            symbol: crypto['symbol'],
+            name: crypto['name'],
+            price: crypto['price'],
+            isStock: false,
+          );
+        }
         
         // Bitcoin chart
-        Container(
-          height: 350,
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Card(
-            elevation: 4,
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Bitcoin (BTC)',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  SizedBox(height: 8),
-                  Expanded(
-                    child: TradingViewMobileWidget(
-                      symbol: 'BTC',
-                      isStockChart: false,
-                      useMockData: isMockData,
-                      liveData: liveMarketData,
+        if (index == tradableCrypto.length + 1) {
+          return Container(
+            height: 350,
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bitcoin (BTC)',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                  ),
-                ],
+                    SizedBox(height: 8),
+                    Expanded(
+                      child: TradingViewMobileWidget(
+                        symbol: 'BTC',
+                        isStockChart: false,
+                        useMockData: isMockData,
+                        liveData: liveMarketData,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }
         
         // Ethereum chart
-        Container(
+        return Container(
           height: 350,
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Card(
@@ -432,8 +460,8 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
               ),
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -610,6 +638,8 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                       Text(
                         name,
                         style: TextStyle(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       Text(
                         symbol,
@@ -700,7 +730,10 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('$action $name ($symbol)'),
+        title: Text(
+          '$action $name ($symbol)',
+          overflow: TextOverflow.ellipsis,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

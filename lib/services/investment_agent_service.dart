@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import '../models/holding.dart';
+import '../models/transaction.dart';
 
 class InvestmentAgentService {
   final String apiKey;
@@ -87,6 +90,140 @@ Provide a concise, informed response focused on answering the user's question ba
       }
       
       return 'An error occurred: ${e.toString()}. Please try again later.';
+    }
+  }
+  
+  /// Enhanced portfolio suggestions with transaction history and risk tolerance
+  Future<Map<String, dynamic>> getEnhancedPortfolioSuggestions({
+    required List<Holding> holdings,
+    required double cashBalance,
+    required List<Transaction> transactions,
+    required Map<String, dynamic> marketData,
+    required String riskTolerance,
+  }) async {
+    try {
+      if (!_isModelInitialized || _model == null) {
+        // Display a user-friendly message when no API key is set
+        if (apiKey.isEmpty) {
+          return {
+            'error': 'To use the AI investment agent, please set up your Gemini API key in Settings.',
+            'suggestions': []
+          };
+        }
+        
+        // Try to initialize again
+        _initializeModel();
+        if (!_isModelInitialized || _model == null) {
+          return {
+            'error': 'Unable to initialize AI model. Please check your API key in Settings.',
+            'suggestions': []
+          };
+        }
+      }
+      
+      // Format holdings for the prompt
+      final formattedHoldings = holdings.map((holding) => {
+        'symbol': holding.symbol,
+        'quantity': holding.quantity,
+        'averageCost': holding.averageCost,
+        'totalCost': holding.totalCost,
+      }).toList();
+      
+      // Format transaction history for the prompt
+      final formattedTransactions = transactions.map((transaction) => {
+        'symbol': transaction.symbol,
+        'action': transaction.action,
+        'quantity': transaction.quantity,
+        'price': transaction.price,
+        'totalAmount': transaction.totalAmount,
+        'timestamp': transaction.timestamp.toIso8601String(),
+      }).toList();
+      
+      // Prepare the context with detailed portfolio information
+      final context = '''
+You are a professional portfolio manager. Analyze this portfolio data and provide actionable suggestions:
+
+## Current Portfolio Holdings
+${json.encode(formattedHoldings)}
+
+## Cash Balance
+$cashBalance
+
+## Transaction History
+${json.encode(formattedTransactions)}
+
+## Market Data
+${json.encode(marketData)}
+
+## Risk Tolerance
+$riskTolerance
+
+## Instructions
+1. Analyze the portfolio's performance, diversification, and alignment with the user's risk tolerance.
+2. Provide 3-5 specific, actionable suggestions for improving the portfolio, such as:
+   - Buy recommendations (specific symbols, quantities, and approximate price targets)
+   - Sell recommendations (specific symbols, quantities)
+   - Asset allocation adjustments
+   - Diversification recommendations
+3. For each suggestion, provide a brief reasoning explaining the rationale.
+4. Format your response in JSON with this structure:
+   {
+     "analysis": {
+       "overview": "A brief overview of the portfolio's current state",
+       "strengths": ["Strength 1", "Strength 2"],
+       "weaknesses": ["Weakness 1", "Weakness 2"]
+     },
+     "suggestions": [
+       {
+         "type": "buy" or "sell" or "hold" or "allocate",
+         "symbol": "Stock/ETF symbol if applicable",
+         "action": "Clear action description (e.g., 'Buy 5 shares of AAPL')",
+         "reasoning": "Brief explanation of why this action is recommended"
+       }
+     ]
+   }
+''';
+      
+      // Generate content using Gemini
+      final content = [Content.text(context)];
+      final response = await _model!.generateContent(content);
+      
+      // Extract and process the response
+      if (response.text == null || response.text!.isEmpty) {
+        return {
+          'error': 'Could not generate portfolio suggestions. Please try again later.',
+          'suggestions': []
+        };
+      }
+      
+      // Extract JSON from the response
+      String jsonText = response.text!;
+      
+      // Some basic cleanup to extract JSON if it's wrapped in code blocks
+      if (jsonText.contains('```json')) {
+        jsonText = jsonText.split('```json')[1].split('```')[0].trim();
+      } else if (jsonText.contains('```')) {
+        jsonText = jsonText.split('```')[1].split('```')[0].trim();
+      }
+      
+      try {
+        // Parse the JSON response
+        final Map<String, dynamic> parsedResponse = json.decode(jsonText);
+        return parsedResponse;
+      } catch (e) {
+        debugPrint('Error parsing portfolio suggestions JSON: $e');
+        return {
+          'error': 'Error parsing AI response. Please try again.',
+          'rawResponse': jsonText,
+          'suggestions': []
+        };
+      }
+    } catch (e) {
+      debugPrint('Error generating enhanced portfolio suggestions: $e');
+      return {
+        'error': 'An error occurred while generating suggestions: ${e.toString()}',
+        'suggestions': []
+      };
     }
   }
   

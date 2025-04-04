@@ -8,11 +8,11 @@ import 'services/ai_financial_service.dart';
 import 'providers/ai_financial_provider.dart';
 import 'screen/ai_financial_screen.dart';
 import 'services/api_key_service.dart';
-import 'services/investment_agent_service.dart';
-import 'providers/investment_agent_provider.dart';
-import 'screen/ai_investment_agent_screen.dart';
 import 'services/market_data_service.dart';
 import 'providers/portfolio_provider.dart';
+import 'providers/user_preferences_provider.dart';
+import 'providers/investment_agent_provider.dart';
+import 'screen/portfolio_suggestions_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,18 +51,9 @@ void main() async {
             aiService: aiService,
           ),
         ),
-        Provider<InvestmentAgentService>(
-          create: (_) => InvestmentAgentService(
-            apiKey: geminiApiKey,
-          ),
-        ),
-        ChangeNotifierProxyProvider<InvestmentAgentService, InvestmentAgentProvider>(
-          create: (context) => InvestmentAgentProvider(
-            service: context.read<InvestmentAgentService>(),
-          ),
-          update: (context, service, previous) => InvestmentAgentProvider(
-            service: service,
-          ),
+        // Add investment agent provider
+        ChangeNotifierProvider<InvestmentAgentProvider>(
+          create: (_) => InvestmentAgentProvider(),
         ),
         // Add market data service provider
         Provider<MarketDataService>.value(
@@ -75,45 +66,221 @@ void main() async {
           )..addSampleHoldings(), // Initialize with sample data
           update: (context, marketDataService, previous) => previous!,
         ),
+        // Add user preferences provider
+        ChangeNotifierProvider<UserPreferencesProvider>(
+          create: (_) => UserPreferencesProvider(),
+        ),
       ],
       child: ChangeNotifierProvider(
         create: (_) => AppState(),
-        child: MyApp(geminiApiKey: geminiApiKey, hasValidApiKey: isValidApiKey),
+        child: AppTheme(geminiApiKey: geminiApiKey, hasValidApiKey: isValidApiKey),
       ),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class AppTheme extends StatelessWidget {
   final String geminiApiKey;
   final bool hasValidApiKey;
   
-  const MyApp({Key? key, required this.geminiApiKey, required this.hasValidApiKey}) : super(key: key);
+  const AppTheme({Key? key, required this.geminiApiKey, required this.hasValidApiKey}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FinStock',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
+      theme: _buildBlackAndWhiteTheme(),
       home: LoginScreen(),
       routes: {
         '/home': (context) => HomeScreen(),
         '/market': (context) => MarketScreen(),
         '/ai_financial': (context) => AIFinancialScreen(geminiApiKey: geminiApiKey),
-        '/investment_agent': (context) => AIInvestmentAgentScreen(),
+        '/portfolio_suggestions': (context) => PortfolioSuggestionsScreen(),
       },
+    );
+  }
+  
+  // Build black and white theme
+  ThemeData _buildBlackAndWhiteTheme() {
+    return ThemeData(
+      primaryColor: Colors.black,
+      scaffoldBackgroundColor: Colors.white,
+      fontFamily: 'Roboto',
+      useMaterial3: true,
+      brightness: Brightness.light,
+      
+      // App bar theme
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      
+      // Button themes
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+      
+      // Text button theme
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+      
+      // Card theme
+      cardTheme: CardTheme(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        color: Colors.white,
+      ),
+      
+      // Tab bar theme
+      tabBarTheme: const TabBarTheme(
+        labelColor: Colors.black,
+        unselectedLabelColor: Color(0xFF707070),
+        indicatorColor: Colors.black,
+      ),
+      
+      // Input decoration theme
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.black),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.black, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        hintStyle: const TextStyle(color: Color(0xFF707070)),
+        labelStyle: const TextStyle(color: Colors.black),
+      ),
+      
+      // Dialog theme
+      dialogTheme: DialogTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        backgroundColor: Colors.white,
+      ),
+      
+      // Floating action button theme
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      
+      // Bottom navigation bar theme
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Color(0xFF707070),
+      ),
+      
+      // Text theme
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
+        displayMedium: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
+        displaySmall: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
+        headlineLarge: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
+        headlineMedium: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
+        headlineSmall: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+        ),
+        titleLarge: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+        ),
+        titleMedium: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+        ),
+        titleSmall: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+        bodyLarge: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
+        bodyMedium: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
+        bodySmall: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
+        labelLarge: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+        ),
+        labelMedium: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+        labelSmall: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      
+      // Icon theme
+      iconTheme: const IconThemeData(
+        color: Colors.black,
+      ),
+      
+      // Divider color
+      dividerColor: Colors.black,
+      
+      // Hint color
+      hintColor: const Color(0xFF707070),
+      
+      // Primary color swatch - using a black MaterialColor
+      primarySwatch: const MaterialColor(
+        0xFF000000,
+        <int, Color>{
+          50: Colors.black,
+          100: Colors.black,
+          200: Colors.black,
+          300: Colors.black,
+          400: Colors.black,
+          500: Colors.black,
+          600: Colors.black,
+          700: Colors.black,
+          800: Colors.black,
+          900: Colors.black,
+        },
+      ),
     );
   }
 }
