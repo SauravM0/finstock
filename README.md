@@ -4,7 +4,8 @@
 
 Trading feels tricky and confusing, right? Our AI Trading Bot is here to simplify it all with live market insights, smart trading signals, and easy-to-grasp explanations. It also helps new trader to learn the trading with simple explanations.Trading just got a whole lot friendlier!
 
-  Key Features 
+  Key Features :
+  
   🔹 Real-Time Analysis ==> Fetches live market data from TradingView.
   
   🔹 AI-Powered Insights ==> Predicts potential trade opportunities.
@@ -25,7 +26,7 @@ Trading feels tricky and confusing, right? Our AI Trading Bot is here to simplif
   
   🔹 Saves Time ==> Analyze the charts and give data in no time helping in reducing the efforts. 
 
-   Future Upgrades
+   Future Upgrades :
 
   🔹 AI Sentiment Analysis ==> Understand news & social media impact.
   
@@ -33,13 +34,14 @@ Trading feels tricky and confusing, right? Our AI Trading Bot is here to simplif
   
   🔹 Mobile App ==> Trade insights on the go.
 
-   Start Trading Smarter
+   Start Trading Smarter :
 
    🔹 This AI bot makes trading simple, safe, and accessible. 
    
    🔹Whether you're a newbie or an experienced trader, it helps you make informed decisions and avoid scams.
 
    Technologies used :
+   
    🔹 Dart 
    
    🔹 Flutter
