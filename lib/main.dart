@@ -11,6 +11,8 @@ import 'services/api_key_service.dart';
 import 'services/investment_agent_service.dart';
 import 'providers/investment_agent_provider.dart';
 import 'screen/ai_investment_agent_screen.dart';
+import 'services/market_data_service.dart';
+import 'providers/portfolio_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,10 @@ void main() async {
   } else {
     print('No Gemini API key provided. AI features will not be available.');
   }
+  
+  // Create the market data service
+  final marketDataService = MarketDataService();
+  await marketDataService.initialize();
   
   runApp(
     MultiProvider(
@@ -58,6 +64,17 @@ void main() async {
             service: service,
           ),
         ),
+        // Add market data service provider
+        Provider<MarketDataService>.value(
+          value: marketDataService,
+        ),
+        // Add portfolio provider
+        ChangeNotifierProxyProvider<MarketDataService, PortfolioProvider>(
+          create: (context) => PortfolioProvider(
+            marketDataService: context.read<MarketDataService>(),
+          )..addSampleHoldings(), // Initialize with sample data
+          update: (context, marketDataService, previous) => previous!,
+        ),
       ],
       child: ChangeNotifierProvider(
         create: (_) => AppState(),
@@ -76,7 +93,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Finance AI',
+      title: 'FinStock',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,

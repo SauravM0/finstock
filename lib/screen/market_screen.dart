@@ -4,6 +4,9 @@ import '../services/market_data_service.dart';
 import '../providers/app_state.dart';
 import '../widgets/trading_view_mobile_widget.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../providers/portfolio_provider.dart';
+import '../services/trading_service.dart';
+import '../models/holding.dart';
 
 class MarketScreen extends StatefulWidget {
   @override
@@ -22,6 +25,22 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
   bool isMockData = false;
   String lastUpdated = '';
   final _storage = FlutterSecureStorage();
+  final TradingService _tradingService = TradingService();
+  
+  // List of tradable stocks
+  final List<Map<String, dynamic>> tradableStocks = [
+    {'symbol': 'AAPL', 'name': 'Apple Inc.', 'price': 180.0},
+    {'symbol': 'MSFT', 'name': 'Microsoft Corporation', 'price': 350.0},
+    {'symbol': 'GOOGL', 'name': 'Alphabet Inc.', 'price': 140.0},
+    {'symbol': 'AMZN', 'name': 'Amazon.com Inc.', 'price': 130.0},
+    {'symbol': 'TSLA', 'name': 'Tesla, Inc.', 'price': 200.0},
+  ];
+  
+  // List of tradable crypto
+  final List<Map<String, dynamic>> tradableCrypto = [
+    {'symbol': 'BTC', 'name': 'Bitcoin', 'price': 30000.0},
+    {'symbol': 'ETH', 'name': 'Ethereum', 'price': 1800.0},
+  ];
 
   @override
   void initState() {
@@ -250,6 +269,14 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
           ),
         ),
         
+        // Tradable stocks list
+        ...tradableStocks.map((stock) => _buildTradableAssetCard(
+          symbol: stock['symbol'],
+          name: stock['name'],
+          price: stock['price'],
+          isStock: true,
+        )),
+        
         // Stock chart
         Container(
           height: 350,
@@ -280,7 +307,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
           ),
         ),
         
-        // Additional stock charts would follow here
+        // Additional stock charts
         Container(
           height: 350,
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -338,6 +365,14 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
+        
+        // Tradable crypto list
+        ...tradableCrypto.map((crypto) => _buildTradableAssetCard(
+          symbol: crypto['symbol'],
+          name: crypto['name'],
+          price: crypto['price'],
+          isStock: false,
+        )),
         
         // Bitcoin chart
         Container(
@@ -544,6 +579,288 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
         );
       },
     );
+  }
+
+  Widget _buildTradableAssetCard({
+    required String symbol,
+    required String name,
+    required double price,
+    required bool isStock,
+  }) {
+    // Generate random price change percentage between -3.0% and +3.0%
+    final priceChange = (DateTime.now().millisecondsSinceEpoch % 6) - 3.0;
+    
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: isStock ? Colors.blue.shade100 : Colors.amber.shade100,
+                  child: Text(symbol[0]),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        symbol,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '\$${price.toStringAsFixed(2)}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${priceChange >= 0 ? '+' : ''}${priceChange.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        color: priceChange >= 0 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: Icon(Icons.add_circle_outline, color: Colors.white),
+                    label: Text('Buy', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      _showTradeDialog(
+                        context: context,
+                        symbol: symbol,
+                        name: name,
+                        currentPrice: price,
+                        isBuy: true,
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: Icon(Icons.remove_circle_outline, color: Colors.white),
+                    label: Text('Sell', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      _showTradeDialog(
+                        context: context,
+                        symbol: symbol,
+                        name: name,
+                        currentPrice: price,
+                        isBuy: false,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTradeDialog({
+    required BuildContext context,
+    required String symbol,
+    required String name,
+    required double currentPrice,
+    required bool isBuy,
+  }) {
+    final portfolioProvider = Provider.of<PortfolioProvider>(context, listen: false);
+    final TextEditingController quantityController = TextEditingController();
+    final action = isBuy ? 'Buy' : 'Sell';
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('$action $name ($symbol)'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Current Price: \$${currentPrice.toStringAsFixed(2)}'),
+            SizedBox(height: 8),
+            Text(isBuy 
+                ? 'Available Cash: \$${portfolioProvider.cashBalance.toStringAsFixed(2)}'
+                : 'Current Holdings: ${_getQuantityOwned(portfolioProvider, symbol).toStringAsFixed(2)} shares'
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: quantityController,
+              decoration: InputDecoration(
+                labelText: 'Quantity to ${isBuy ? 'buy' : 'sell'}',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            SizedBox(height: 8),
+            StatefulBuilder(
+              builder: (context, setState) {
+                final quantity = double.tryParse(quantityController.text) ?? 0;
+                final totalValue = quantity * currentPrice;
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total Value: \$${totalValue.toStringAsFixed(2)}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (isBuy && quantity > 0)
+                      Text(
+                        'Remaining Cash: \$${(portfolioProvider.cashBalance - totalValue).toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: portfolioProvider.cashBalance >= totalValue ? Colors.green : Colors.red,
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isBuy ? Colors.green : Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(action),
+            onPressed: () async {
+              final quantity = double.tryParse(quantityController.text) ?? 0;
+              
+              if (quantity <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Please enter a valid quantity'))
+                );
+                return;
+              }
+              
+              Navigator.of(ctx).pop();
+              
+              // Show loading indicator
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return Dialog(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(width: 20),
+                          Text('Processing ${isBuy ? 'purchase' : 'sale'}...'),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+              
+              try {
+                // Execute the trade
+                final result = isBuy
+                    ? await _tradingService.buyStock(symbol, quantity, currentPrice)
+                    : await _tradingService.sellStock(symbol, quantity, currentPrice);
+                
+                // Close loading dialog
+                Navigator.of(context).pop();
+                
+                if (result.success) {
+                  // Update portfolio
+                  bool portfolioUpdated = isBuy
+                      ? await portfolioProvider.buyStock(symbol, quantity, currentPrice)
+                      : await portfolioProvider.sellStock(symbol, quantity, currentPrice);
+                  
+                  if (portfolioUpdated) {
+                    // Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result.message),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    // Show failure message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(isBuy 
+                            ? 'Insufficient funds to complete this purchase'
+                            : 'Insufficient shares to complete this sale'
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  // Show error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(result.message),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                // Close loading dialog
+                Navigator.of(context).pop();
+                
+                // Show error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('An error occurred: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _getQuantityOwned(PortfolioProvider provider, String symbol) {
+    final holding = provider.holdings.firstWhere(
+      (h) => h.symbol == symbol,
+      orElse: () => Holding(symbol: symbol, quantity: 0, averageCost: 0),
+    );
+    return holding.quantity;
   }
 
   Future<void> _loadPreferences() async {
