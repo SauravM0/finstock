@@ -24,17 +24,17 @@ Trading feels tricky and confusing, right? Our AI Trading Bot is here to simplif
   🔹 More Trading Strategies – Advanced trading techniques.
   🔹 Mobile App – Trade insights on the go.
 
-   🎯 Start Trading Smarter
+   Start Trading Smarter
 
    🔹 This AI bot makes trading simple, safe, and accessible. 
-   🔹 Whether you're a newbie or an experienced trader, it helps you make informed decisions and avoid scams.
+   🔹Whether you're a newbie or an experienced trader, it helps you make informed decisions and avoid scams.
+
+   Technologies used :
+   🔹Dart 
+   🔹Flutter 
+   🔹Gemini
 
 
-
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
