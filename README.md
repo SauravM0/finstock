@@ -40,7 +40,7 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 ## 🎬 Watch Our Demo
 
 *(Add the link to your YouTube video here using the following format:)*
-[Watch our FinStock Demo on YouTube](YOUR_YOUTUBE_VIDEO_LINK_HERE)
+[Watch our FinStock Demo on YouTube](https://youtu.be/S_BxU6phnpo)
 
 ---
 
