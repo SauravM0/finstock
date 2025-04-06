@@ -34,9 +34,12 @@ class _PortfolioScreenState extends State<PortfolioScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Theme.of(context).primaryColor,
-          labelColor: Theme.of(context).primaryColor,
-          unselectedLabelColor: Theme.of(context).hintColor,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white,
+          labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: TextStyle(fontSize: 16),
+          indicatorWeight: 3,
           tabs: [
             Tab(text: 'Overview'),
             Tab(text: 'Assets'),
@@ -75,26 +78,26 @@ class _PortfolioScreenState extends State<PortfolioScreen>
         double investedValue = totalValue - portfolioProvider.cashBalance;
         double investedPercentage = totalValue > 0 ? (investedValue / totalValue) * 100 : 0;
         double cashPercentage = totalValue > 0 ? (portfolioProvider.cashBalance / totalValue) * 100 : 0;
-        
+
         // Get the last updated time
         DateTime now = DateTime.now();
         String lastUpdated = "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
-        
+
         // Calculate overall P/L estimates
         double dailyChange = totalValue * 0.01; // For demo, assume 1% daily change
         double overallGainLoss = 0;
         double overallGainLossPercent = 0;
-        
+
         if (portfolioProvider.holdings.isNotEmpty) {
           double totalCost = portfolioProvider.holdings.fold(
-            0.0, 
+            0.0,
             (prev, holding) => prev + holding.totalCost
           );
-          
+
           overallGainLoss = investedValue - totalCost;
           overallGainLossPercent = totalCost > 0 ? (overallGainLoss / totalCost) * 100 : 0;
         }
-        
+
         // Find top performers and losers
         List<Holding> sortedHoldings = List.from(portfolioProvider.holdings);
         if (sortedHoldings.isNotEmpty) {
@@ -104,16 +107,16 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             return bProfit.compareTo(aProfit); // Descending order
           });
         }
-        
+
         List<Holding> topPerformers = sortedHoldings.take(3).toList();
         List<Holding> worstPerformers = sortedHoldings.reversed.take(3).toList();
-        
+
         return ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           children: [
             // Portfolio summary KPIs
             _buildPortfolioHeader(totalValue, portfolioProvider, overallGainLoss, overallGainLossPercent),
-            
+
             // Last updated indicator
             Align(
               alignment: Alignment.centerRight,
@@ -128,7 +131,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 ),
               ),
             ),
-            
+
             // Portfolio breakdown card
             Card(
               elevation: 2,
@@ -165,18 +168,18 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                         ),
                       ],
                     ),
-                    
+
                     if (portfolioProvider.holdings.isNotEmpty) ...[
                       SizedBox(height: 16),
                       Divider(),
-                      SizedBox(height: 8),
+                      SizedBox(height: 16),
                       Text(
                         'Asset Allocation',
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
-                      SizedBox(height: 12),
+                      SizedBox(height: 8),
                       Container(
-                        height: 200, // Reduced height for better layout
+                        height: 240, // Increased height for better layout
                         child: _buildAssetAllocationChart(portfolioProvider),
                       ),
                     ],
@@ -184,9 +187,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 ),
               ),
             ),
-            
+
             SizedBox(height: 24),
-            
+
             // Top performers
             if (topPerformers.isNotEmpty) ...[
               Text(
@@ -197,7 +200,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
               ...topPerformers.map((holding) => _buildPerformerItem(holding, isGainer: true)),
               SizedBox(height: 24),
             ],
-            
+
             // Worst performers
             if (worstPerformers.isNotEmpty) ...[
               Text(
@@ -208,7 +211,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
               ...worstPerformers.map((holding) => _buildPerformerItem(holding, isGainer: false)),
               SizedBox(height: 24),
             ],
-            
+
             // Holdings count
             Card(
               child: Padding(
@@ -239,9 +242,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 ),
               ),
             ),
-            
+
             SizedBox(height: 24),
-            
+
             // View all holdings button
             SizedBox(
               width: double.infinity,
@@ -256,7 +259,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 ),
               ),
             ),
-            
+
             SizedBox(height: 32),
           ],
         );
@@ -266,13 +269,13 @@ class _PortfolioScreenState extends State<PortfolioScreen>
 
   // Enhanced Portfolio Header
   Widget _buildPortfolioHeader(
-    double totalValue, 
+    double totalValue,
     PortfolioProvider portfolioProvider,
     double overallGainLoss,
     double overallGainLossPercent,
   ) {
     bool isPositive = overallGainLossPercent >= 0;
-    
+
     return Container(
       margin: EdgeInsets.symmetric(vertical: 16),
       padding: EdgeInsets.all(20),
@@ -336,7 +339,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       ),
     );
   }
-  
+
   Widget _buildKpiItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,7 +362,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       ],
     );
   }
-  
+
   Widget _buildBreakdownItem(String label, String value, String percentage) {
     return Column(
       children: [
@@ -388,62 +391,63 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       ],
     );
   }
-  
+
   // Asset Allocation Chart
   Widget _buildAssetAllocationChart(PortfolioProvider portfolioProvider) {
     return Container(
-      height: 280,
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 8),
       child: FutureBuilder<double>(
         future: portfolioProvider.getTotalPortfolioValue(),
         builder: (context, snapshot) {
           double totalValue = snapshot.data ?? 0.0;
           double investedValue = totalValue - portfolioProvider.cashBalance;
-          
+
           // For simplicity, we'll just show cash vs invested
           List<PieChartSectionData> sections = [
             PieChartSectionData(
               color: Colors.black,
               value: investedValue,
-              title: 'Invested',
-              titleStyle: TextStyle(color: Colors.white, fontSize: 12),
-              radius: 100,
+              title: investedValue > 0 ? '${((investedValue / totalValue) * 100).toStringAsFixed(0)}%' : '',
+              titleStyle: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              radius: 50,
+              titlePositionPercentageOffset: 0.55,
             ),
             PieChartSectionData(
               color: Colors.grey[300],
               value: portfolioProvider.cashBalance,
-              title: 'Cash',
-              titleStyle: TextStyle(color: Colors.black, fontSize: 12),
-              radius: 100,
+              title: portfolioProvider.cashBalance > 0 ? '${((portfolioProvider.cashBalance / totalValue) * 100).toStringAsFixed(0)}%' : '',
+              titleStyle: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
+              radius: 50,
+              titlePositionPercentageOffset: 0.55,
             ),
           ];
-          
+
           return Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Asset Allocation',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              SizedBox(height: 12),
-              Expanded(
+              // Removed duplicate title
+              SizedBox(height: 8),
+              AspectRatio(
+                aspectRatio: 1.5,
                 child: totalValue > 0
                     ? PieChart(
                         PieChartData(
                           sections: sections,
-                          centerSpaceRadius: 40,
+                          centerSpaceRadius: 30,
                           sectionsSpace: 2,
+                          pieTouchData: PieTouchData(enabled: false),
                         ),
                       )
                     : Center(
                         child: Text('Add assets to see your allocation'),
                       ),
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLegendItem('Invested', Colors.black),
-                  SizedBox(width: 16),
+                  SizedBox(width: 24),
                   _buildLegendItem('Cash', Colors.grey[300]!),
                 ],
               ),
@@ -453,10 +457,10 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       ),
     );
   }
-  
+
   Widget _buildPerformerItem(Holding holding, {required bool isGainer}) {
     double gainLossPercent = ((holding.currentPrice - holding.averageCost) / holding.averageCost) * 100;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -562,9 +566,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
-                
+
                 double totalValue = snapshot.data ?? 0.0;
-                
+
                 // For demo purposes, generate some mock history points
                 final List<FlSpot> spots = List.generate(
                   7,
@@ -573,7 +577,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                     totalValue * (0.95 + (index / 50)), // Create some variation
                   ),
                 );
-                
+
                 return LineChart(
                   LineChartData(
                     minX: 0,
@@ -677,7 +681,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: selectedTimeRange == range 
+                color: selectedTimeRange == range
                     ? Theme.of(context).primaryColor
                     : Colors.grey[200],
                 borderRadius: BorderRadius.circular(16),
@@ -685,11 +689,11 @@ class _PortfolioScreenState extends State<PortfolioScreen>
               child: Text(
                 range,
                 style: TextStyle(
-                  color: selectedTimeRange == range 
+                  color: selectedTimeRange == range
                       ? Colors.white
                       : Colors.black,
-                  fontWeight: selectedTimeRange == range 
-                      ? FontWeight.bold 
+                  fontWeight: selectedTimeRange == range
+                      ? FontWeight.bold
                       : FontWeight.normal,
                 ),
               ),
@@ -699,19 +703,19 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       ),
     );
   }
-  
+
   // Performance Summary Widget
   Widget _buildPerformanceSummary(PortfolioProvider portfolioProvider) {
     return FutureBuilder<double>(
       future: portfolioProvider.getTotalPortfolioValue(),
       builder: (context, snapshot) {
         double totalValue = snapshot.data ?? 0.0;
-        
+
         // Generate mock performance data
         final dayChange = (totalValue * 0.005) * (DateTime.now().millisecondsSinceEpoch % 3 == 0 ? -1 : 1);
         final weekChange = (totalValue * 0.02) * (DateTime.now().millisecondsSinceEpoch % 2 == 0 ? -1 : 1);
         final monthChange = (totalValue * 0.05);
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -727,12 +731,12 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       },
     );
   }
-  
+
   // Performance Item
   Widget _buildPerformanceItem(String period, double change, double total) {
     final percentChange = (change / total) * 100;
     final isPositive = change >= 0;
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -767,22 +771,32 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       ],
     );
   }
-  
+
   // Helper Widgets
   Widget _buildLegendItem(String label, Color color) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 16,
-          height: 16,
-          color: color,
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-        SizedBox(width: 4),
-        Text(label),
+        SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
-  
+
   Widget _buildAssetDetailItem(String label, String value, {Color? color}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -850,7 +864,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
     final currentValue = holding.quantity * holding.currentPrice;
     final gainLoss = currentValue - holding.totalCost;
     final gainLossPercent = (gainLoss / holding.totalCost) * 100;
-    
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
@@ -880,7 +894,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                       Text(
                         holding.symbol,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold, 
+                          fontWeight: FontWeight.bold,
                           fontSize: 16,
                           color: Colors.black,
                         ),
@@ -890,7 +904,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                       Text(
                         'Current: \$${holding.currentPrice.toStringAsFixed(2)} | Avg: \$${holding.averageCost.toStringAsFixed(2)}',
                         style: TextStyle(
-                          color: Theme.of(context).hintColor, 
+                          color: Theme.of(context).hintColor,
                           fontSize: 14
                         ),
                       ),
@@ -920,7 +934,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
   // Add Cash Dialog
   void _showAddCashDialog(BuildContext context) {
     final TextEditingController amountController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -953,7 +967,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 final portfolioProvider = Provider.of<PortfolioProvider>(context, listen: false);
                 portfolioProvider.addCash(amount);
                 Navigator.of(ctx).pop();
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Added \$${amount.toStringAsFixed(2)} to your account'),
@@ -981,13 +995,13 @@ class _PortfolioScreenState extends State<PortfolioScreen>
 class AssetDetailScreen extends StatelessWidget {
   final String assetName;
   final Map<String, dynamic> assetData;
-  
+
   const AssetDetailScreen({
     Key? key,
     required this.assetName,
     required this.assetData,
   }) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

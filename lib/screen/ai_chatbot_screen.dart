@@ -23,12 +23,14 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
 
   // Predefined question suggestions for new users
   final List<String> _suggestions = [
-    "How should I start investing with limited funds?",
-    "What's the difference between stocks and bonds?",
-    "How do I create a simple budget?",
-    "What is dollar-cost averaging?",
-    "How should I save for retirement?",
-    "How does cryptocurrency work?",
+    "I have 10000 dollars, where should I invest it?",
+    "What's the optimal asset allocation for a 35-year-old?",
+    "How do I create a budget that I'll actually stick to?",
+    "Should I prioritize paying off debt or investing?",
+    "How much should I save for retirement by age 40?",
+    "Is cryptocurrency a good investment in today's market?",
+    "What tax-efficient investing strategies should I consider?",
+    "How can I protect my portfolio during market downturns?",
   ];
 
   @override
@@ -43,18 +45,18 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
       _isLoading = true;
       _isError = false;
     });
-    
+
     try {
       final response = await _geminiService.startChat();
-      
+
       // Check if response suggests an API key issue
-      final bool possibleApiKeyIssue = response.contains("problem with the API") || 
+      final bool possibleApiKeyIssue = response.contains("problem with the API") ||
                                       response.contains("backup service");
-      
+
       setState(() {
         _messages.add({
-          'sender': 'AI', 
-          'text': "Hello! I'm Dixit Aerofluen, your AI Financial Advisor. I can help you with investment strategies, budgeting, and financial planning. Select a question below or type your own question to get started!",
+          'sender': 'AI',
+          'text': "Hello! I'm FinStock, your AI Financial Advisor with expertise in global markets. I can provide personalized guidance on:\n\n• Investment strategies and portfolio optimization\n• Budgeting and debt management\n• Retirement planning and tax-efficient investing\n• Cryptocurrency and digital assets\n• Market trend analysis and economic indicators\n\nSelect a question below or type your own financial question to get started!",
           'timestamp': DateTime.now().toString(),
           'isDemo': possibleApiKeyIssue,
         });
@@ -68,8 +70,8 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         _isLoading = false;
         _isUsingDemoMode = true;
         _messages.add({
-          'sender': 'AI', 
-          'text': "Hello! I'm Dixit Aerofluen, your AI Financial Advisor. I'm currently operating in offline mode, but I can still provide helpful financial guidance. Select a question below or ask your own!",
+          'sender': 'AI',
+          'text': "Hello! I'm FinStock, your AI Financial Advisor. I'm currently operating in offline mode, but I can still provide detailed financial guidance on:\n\n• Investment strategies and asset allocation\n• Budgeting and saving techniques\n• Retirement planning strategies\n• Cryptocurrency investment approaches\n• Market analysis and economic trends\n\nSelect a question below or ask me anything about personal finance or investing!",
           'timestamp': DateTime.now().toString(),
           'isDemo': true,
         });
@@ -80,13 +82,13 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
 
   Future<void> _sendMessage([String? predefinedMessage]) async {
     String message = predefinedMessage ?? _controller.text;
-    
+
     if (message.isEmpty) return;
-    
+
     if (predefinedMessage == null) {
       _controller.clear();
     }
-    
+
     setState(() {
       _messages.add({
         'sender': 'User',
@@ -100,7 +102,7 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
 
     try {
       final response = await _geminiService.sendMessage(message);
-      
+
       // Check if response is an error message or using demo mode
       final bool isErrorResponse = response.contains('No internet connection') ||
           response.contains('Unable to connect') ||
@@ -108,7 +110,7 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
           response.contains('I apologize') ||
           response.contains('trouble accessing') ||
           response.contains('error processing');
-      
+
       final bool isUsingDemo = response.contains('Please note this is general advice') ||
                               response.contains('This is simplified advice') ||
                               response.contains('This general advice may need adjustment') ||
@@ -141,7 +143,7 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         } else {
           _messages.add({
             'sender': 'AI',
-            'text': "I apologize, but I encountered a technical issue. I'm still here to help! Please try asking your question again or try one of the suggested topics below.",
+            'text': "I apologize, but I encountered a temporary technical issue connecting to my financial knowledge database. I'm still here to help! Please try asking your question again in a slightly different way, or select one of the suggested financial topics below. I'm particularly good at answering questions about investment strategies, retirement planning, and budgeting.",
             'timestamp': DateTime.now().toString(),
             'isError': true,
           });
@@ -152,10 +154,10 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
       });
     }
   }
-  
+
   String _getSimpleDemoResponse(String message) {
     message = message.toLowerCase();
-    
+
     if (message.contains('stock') || message.contains('invest')) {
       return "When investing in stocks, diversification is key to reducing risk. Consider a mix of different sectors and asset classes (like ETFs) to start.\n\nFor beginners, index funds offer an excellent way to gain broad market exposure without needing to pick individual stocks. Many successful investors recommend starting with low-cost index funds that track major indices like the S&P 500.\n\nRemember to only invest money you don't need in the short term, as markets can be volatile.";
     } else if (message.contains('crypto') || message.contains('bitcoin')) {
@@ -178,6 +180,15 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
   }
 
   String _formatAIResponse(String text) {
+    // Check if this is an investment recommendation response
+    final bool isInvestmentRecommendation = text.contains('Based on your investment amount') ||
+                                          text.contains('here are the best options');
+
+    if (isInvestmentRecommendation) {
+      // Apply special formatting for investment recommendations
+      return _formatInvestmentRecommendation(text);
+    }
+
     // Format bullet points and numbered lists
     final formattedText = text
         .replaceAllMapped(RegExp(r'^\s*[•-]\s*(.+)$', multiLine: true),
@@ -187,11 +198,29 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
     return formattedText;
   }
 
+  String _formatInvestmentRecommendation(String text) {
+    // Extract the header and recommendations
+    final parts = text.split('\n\n');
+    String header = parts.isNotEmpty ? parts[0] : '';
+
+    // Format each recommendation line with bold symbols
+    final formattedText = text.replaceAllMapped(
+      RegExp(r'^(\d+\.\s+)([A-Z]+(?:\.[A-Z])?):\s+([^-]+)\s*-\s*(.+)$', multiLine: true),
+      (match) => '${match.group(1)}**${match.group(2)}**: ${match.group(3)} - ${match.group(4)}'
+    );
+
+    return formattedText;
+  }
+
   Widget _buildMessage(Map<String, dynamic> message) {
     final isUser = message['sender'] == 'User';
     final isError = message['isError'] == true;
     final isDemo = message['isDemo'] == true;
     final text = message['text'] ?? '';
+
+    // Check if this is an investment recommendation
+    final bool isInvestmentRecommendation = !isUser &&
+        (text.contains('Based on your investment amount') || text.contains('here are the best options'));
 
     // Format bullet points and lists in AI responses
     final formattedText = !isUser ? _formatAIResponse(text) : text;
@@ -204,11 +233,21 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         decoration: BoxDecoration(
           color: isError
               ? Colors.red[50]
-              : (isUser ? Colors.blue[100] : Colors.grey[200]),
-          borderRadius: BorderRadius.circular(12),
+              : (isUser ? Colors.blue[100] :
+                 (isInvestmentRecommendation ? Colors.green[50] :
+                  (isDemo ? Colors.grey[200] : Colors.blue[50]))),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
+          ],
           border: isError
               ? Border.all(color: Colors.red.shade200)
-              : (isDemo ? Border.all(color: Colors.orange.shade200) : null),
+              : (isDemo ? Border.all(color: Colors.orange.shade200) :
+                 (isInvestmentRecommendation ? Border.all(color: Colors.green.shade300) : null)),
         ),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -235,12 +274,35 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
                   ],
                 ),
               ),
-            Text(
-              formattedText,
-              style: TextStyle(
-                color: isError ? Colors.red.shade700 : null,
+            if (!isUser && isInvestmentRecommendation)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.trending_up, size: 12, color: Colors.green.shade700),
+                    SizedBox(width: 4),
+                    Text(
+                      'Investment Recommendations',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            isInvestmentRecommendation
+                ? _buildInvestmentRecommendationContent(formattedText)
+                : Text(
+                    formattedText,
+                    style: TextStyle(
+                      color: isError ? Colors.red.shade700 : (isUser ? Colors.black87 : Colors.black),
+                      height: 1.4,
+                      fontSize: 15,
+                    ),
+                  ),
             if (isError)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
@@ -260,21 +322,148 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
     );
   }
 
+  Widget _buildInvestmentRecommendationContent(String text) {
+    // Split the text into lines
+    final lines = text.split('\n');
+
+    // Extract header and recommendations
+    String header = '';
+    List<String> recommendations = [];
+    String footer = '';
+
+    bool inRecommendations = false;
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+
+      if (line.isEmpty) continue;
+
+      if (line.contains('here are the best options')) {
+        header = line;
+        inRecommendations = true;
+      } else if (inRecommendations && line.startsWith(RegExp(r'\d+\.'))) {
+        recommendations.add(line);
+      } else if (inRecommendations && recommendations.isNotEmpty && !line.startsWith(RegExp(r'\d+\.'))) {
+        footer = line;
+        inRecommendations = false;
+      } else if (!inRecommendations && recommendations.isEmpty) {
+        header = header.isEmpty ? line : '$header\n$line';
+      } else if (!inRecommendations && !recommendations.isEmpty) {
+        footer = footer.isEmpty ? line : '$footer\n$line';
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Text(
+          header,
+          style: TextStyle(
+            color: Colors.black87,
+            height: 1.4,
+            fontSize: 15,
+          ),
+        ),
+        SizedBox(height: 8),
+
+        // Recommendations
+        ...recommendations.map((rec) {
+          // Parse the recommendation
+          final match = RegExp(r'^(\d+\.\s+)([A-Z]+(?:\.[A-Z])?):\s+([^-]+)\s*-\s*(.+)$')
+              .firstMatch(rec);
+
+          if (match != null) {
+            final number = match.group(1) ?? '';
+            final symbol = match.group(2) ?? '';
+            final name = match.group(3)?.trim() ?? '';
+            final reason = match.group(4) ?? '';
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    number,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  SizedBox(width: 4),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(color: Colors.black87, fontSize: 15, height: 1.4),
+                        children: [
+                          TextSpan(
+                            text: symbol,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade800,
+                            ),
+                          ),
+                          TextSpan(text: ': '),
+                          TextSpan(text: name),
+                          TextSpan(text: ' - '),
+                          TextSpan(
+                            text: reason,
+                            style: TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return Text(rec, style: TextStyle(fontSize: 15, height: 1.4));
+          }
+        }).toList(),
+
+        // Footer if exists
+        if (footer.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              footer,
+              style: TextStyle(
+                color: Colors.black87,
+                height: 1.4,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildSuggestionChips() {
     return Container(
-      height: 50,
+      height: 60,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(vertical: 8),
         children: _suggestions.map((suggestion) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: ActionChip(
               label: Text(
-                suggestion.length > 25 ? '${suggestion.substring(0, 22)}...' : suggestion,
-                style: TextStyle(fontSize: 12),
+                suggestion.length > 30 ? '${suggestion.substring(0, 27)}...' : suggestion,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.blue.shade800,
+                ),
               ),
               onPressed: () => _sendMessage(suggestion),
               backgroundColor: Colors.blue.shade50,
+              elevation: 1,
+              shadowColor: Colors.blue.shade100,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.blue.shade200, width: 0.5),
+              ),
             ),
           );
         }).toList(),
@@ -291,12 +480,26 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
             CircleAvatar(
               backgroundColor: Colors.blue.shade100,
               child: Icon(Icons.support_agent, color: Colors.blue.shade700),
-              radius: 16,
+              radius: 18,
             ),
-            SizedBox(width: 8),
-            Text('Dixit Aerofluen, Financial Advisor'),
+            SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'FinStock AI',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Financial Advisor',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                ),
+              ],
+            ),
           ],
         ),
+        elevation: 2,
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -309,16 +512,36 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         children: [
           if (_isUsingDemoMode)
             Container(
-              color: Colors.orange.shade100,
-              padding: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange.shade50, Colors.orange.shade100],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.orange.shade800),
-                  SizedBox(width: 8),
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.info_outline, size: 14, color: Colors.orange.shade800),
+                  ),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'You\'re using simplified guidance mode. The advisor will provide general financial advice.',
-                      style: TextStyle(fontSize: 12, color: Colors.orange.shade900),
+                      'You\'re using simplified guidance mode. The advisor will provide general financial advice based on best practices.',
+                      style: TextStyle(fontSize: 12, color: Colors.orange.shade900, height: 1.3),
                     ),
                   ),
                 ],
@@ -371,35 +594,69 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
                     controller: _controller,
                     decoration: InputDecoration(
                       hintText: 'Ask about your finances...',
+                      prefixIcon: Icon(Icons.account_balance, color: Colors.blue.shade300),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                     textInputAction: TextInputAction.send,
                     onSubmitted: (_) => _sendMessage(),
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
                 SizedBox(width: 8),
                 FloatingActionButton(
                   onPressed: _isLoading ? null : _sendMessage,
-                  child: Icon(_isLoading ? Icons.hourglass_top : Icons.send),
+                  child: _isLoading
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Icon(Icons.send),
                   mini: true,
-                  backgroundColor: _isLoading ? Colors.grey : Colors.blue,
+                  elevation: 2,
+                  backgroundColor: _isLoading ? Colors.grey.shade400 : Colors.blue.shade600,
                 ),
               ],
             ),
           ),
           SizedBox(height: 8),
-          Text(
-            'Responses are AI-generated and may not be suitable for all financial situations.',
-            style: TextStyle(
-              fontSize: 10,
-              fontStyle: FontStyle.italic,
-              color: Colors.grey.shade600,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
             ),
-            textAlign: TextAlign.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.info_outline, size: 14, color: Colors.grey.shade600),
+                SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Responses are AI-generated and should not replace professional financial advice.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade700,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 8),
         ],

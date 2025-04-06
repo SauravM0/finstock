@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
         PortfolioSuggestionsScreen(),
         SettingsScreen(),
       ];
-      
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('Error initializing screens: $e');
-      
+
       // Fallback initialization
       _screens = [
         PortfolioScreen(),
@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
         PortfolioSuggestionsScreen(),
         SettingsScreen(),
       ];
-      
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -72,37 +72,49 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-    
+
+    // Get the theme's color scheme
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pie_chart),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        child: _screens[_selectedIndex],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        animationDuration: const Duration(milliseconds: 800),
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.pie_chart_outline),
+            selectedIcon: Icon(Icons.pie_chart),
             label: 'Portfolio',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.trending_up),
+          NavigationDestination(
+            icon: Icon(Icons.trending_up_outlined),
+            selectedIcon: Icon(Icons.trending_up),
             label: 'Market',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assistant),
+          NavigationDestination(
+            icon: Icon(Icons.assistant_outlined),
+            selectedIcon: Icon(Icons.assistant),
             label: 'AI Advisor',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.auto_awesome),
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            selectedIcon: Icon(Icons.auto_awesome),
             label: 'Portfolio AI',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }

@@ -26,7 +26,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
   String lastUpdated = '';
   final _storage = FlutterSecureStorage();
   final TradingService _tradingService = TradingService();
-  
+
   // List of tradable stocks
   final List<Map<String, dynamic>> tradableStocks = [
     {'symbol': 'AAPL', 'name': 'Apple Inc.', 'price': 180.0},
@@ -35,7 +35,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     {'symbol': 'AMZN', 'name': 'Amazon.com Inc.', 'price': 130.0},
     {'symbol': 'TSLA', 'name': 'Tesla, Inc.', 'price': 200.0},
   ];
-  
+
   // List of tradable crypto
   final List<Map<String, dynamic>> tradableCrypto = [
     {'symbol': 'BTC', 'name': 'Bitcoin', 'price': 30000.0},
@@ -109,11 +109,11 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     if (isRefreshing) return; // Prevent multiple refreshes
 
     final currentTab = _tabController.index;
-    
+
     setState(() {
       isRefreshing = true;
     });
-    
+
     try {
       if (currentTab == 0) {
         // Refresh stocks (increment the counter to force TradingView refresh)
@@ -161,6 +161,12 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             Tab(text: 'Crypto'),
             Tab(text: 'News'),
           ],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white,
+          labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: TextStyle(fontSize: 16),
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
         ),
         actions: [
           if (isMockData)
@@ -277,7 +283,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             ],
           );
         }
-        
+
         // Stocks
         if (index > 0 && index <= tradableStocks.length) {
           final stock = tradableStocks[index - 1];
@@ -288,7 +294,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             isStock: true,
           );
         }
-        
+
         // S&P 500 chart
         if (index == tradableStocks.length + 1) {
           return Container(
@@ -320,7 +326,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             ),
           );
         }
-        
+
         // Apple chart
         return Container(
           height: 350,
@@ -388,7 +394,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             ],
           );
         }
-        
+
         // Crypto assets
         if (index > 0 && index <= tradableCrypto.length) {
           final crypto = tradableCrypto[index - 1];
@@ -399,7 +405,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             isStock: false,
           );
         }
-        
+
         // Bitcoin chart
         if (index == tradableCrypto.length + 1) {
           return Container(
@@ -431,7 +437,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             ),
           );
         }
-        
+
         // Ethereum chart
         return Container(
           height: 350,
@@ -507,7 +513,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
               ),
       );
     }
-    
+
     return ListView.builder(
       key: key,
       physics: AlwaysScrollableScrollPhysics(), // Ensure pull-to-refresh works
@@ -540,10 +546,10 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             ),
           );
         }
-        
+
         final newsIndex = index - 1;
         final news = marketNews[newsIndex];
-        
+
         return Card(
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListTile(
@@ -617,7 +623,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
   }) {
     // Generate random price change percentage between -3.0% and +3.0%
     final priceChange = (DateTime.now().millisecondsSinceEpoch % 6) - 3.0;
-    
+
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Padding(
@@ -726,7 +732,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
     final portfolioProvider = Provider.of<PortfolioProvider>(context, listen: false);
     final TextEditingController quantityController = TextEditingController();
     final action = isBuy ? 'Buy' : 'Sell';
-    
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -740,7 +746,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
           children: [
             Text('Current Price: \$${currentPrice.toStringAsFixed(2)}'),
             SizedBox(height: 8),
-            Text(isBuy 
+            Text(isBuy
                 ? 'Available Cash: \$${portfolioProvider.cashBalance.toStringAsFixed(2)}'
                 : 'Current Holdings: ${_getQuantityOwned(portfolioProvider, symbol).toStringAsFixed(2)} shares'
             ),
@@ -758,7 +764,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
               builder: (context, setState) {
                 final quantity = double.tryParse(quantityController.text) ?? 0;
                 final totalValue = quantity * currentPrice;
-                
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -794,16 +800,16 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
             child: Text(action),
             onPressed: () async {
               final quantity = double.tryParse(quantityController.text) ?? 0;
-              
+
               if (quantity <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Please enter a valid quantity'))
                 );
                 return;
               }
-              
+
               Navigator.of(ctx).pop();
-              
+
               // Show loading indicator
               showDialog(
                 context: context,
@@ -824,22 +830,22 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                   );
                 },
               );
-              
+
               try {
                 // Execute the trade
                 final result = isBuy
                     ? await _tradingService.buyStock(symbol, quantity, currentPrice)
                     : await _tradingService.sellStock(symbol, quantity, currentPrice);
-                
+
                 // Close loading dialog
                 Navigator.of(context).pop();
-                
+
                 if (result.success) {
                   // Update portfolio
                   bool portfolioUpdated = isBuy
                       ? await portfolioProvider.buyStock(symbol, quantity, currentPrice)
                       : await portfolioProvider.sellStock(symbol, quantity, currentPrice);
-                  
+
                   if (portfolioUpdated) {
                     // Show success message
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -852,7 +858,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
                     // Show failure message
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(isBuy 
+                        content: Text(isBuy
                             ? 'Insufficient funds to complete this purchase'
                             : 'Insufficient shares to complete this sale'
                         ),
@@ -872,7 +878,7 @@ class _MarketScreenState extends State<MarketScreen> with SingleTickerProviderSt
               } catch (e) {
                 // Close loading dialog
                 Navigator.of(context).pop();
-                
+
                 // Show error message
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
