@@ -1,4 +1,4 @@
-# FinStock: AI-Powered Investing | GDG on Campus Solution Challenge
+# FinStock: AI-Powered Investing 
 #saurav
 ## Getting Started
 
