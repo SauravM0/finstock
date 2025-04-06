@@ -41,7 +41,7 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 <div align="center">
   <a href="https://youtu.be/S_BxU6phnpo">
-    <img src="[http://i.ytimg.com/vi/4/hqdefault.jpg](https://drive.google.com/file/d/1bbJ5wOoGS3EvCIJ_3ale1c4cNPA1g7G4/view?usp=sharing)" alt="FinStock Demo Video" style="width:600px;">
+    <img src="http://i.ytimg.com/vi/4/hqdefault.jpg](https://drive.google.com/file/d/1bbJ5wOoGS3EvCIJ_3ale1c4cNPA1g7G4/view?usp=sharing" alt="FinStock Demo Video" style="width:600px;">
   </a>
 </div>
 
