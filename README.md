@@ -24,12 +24,12 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 <table>
   <tr>
-    <td><img src="![image](https://github.com/user-attachments/assets/2728f472-bf72-4cce-9567-edf7da31b205)" width="300" alt="App Screenshot 1"></td>
-    <td><img src="![image](https://github.com/user-attachments/assets/29842bfb-531c-47aa-802c-a09d18c8baec)" width="300" alt="App Screenshot 2"></td>
+    <td><img src="https://github.com/user-attachments/assets/2728f472-bf72-4cce-9567-edf7da31b205" width="300" alt="App Screenshot 1"></td>
+    <td><img src="https://github.com/user-attachments/assets/29842bfb-531c-47aa-802c-a09d18c8baec" width="300" alt="App Screenshot 2"></td>
   </tr>
   <tr>
-    <td><img src="![WhatsApp Image 2025-04-06 at 13 07 43_3b1e534a](https://github.com/user-attachments/assets/99d895f7-ff1a-45a1-953b-188f831ba2ce)" width="300" alt="App Screenshot 3"</td>
-    <td><img src="![WhatsApp Image 2025-04-06 at 13 07 43_0fcfa005](https://github.com/user-attachments/assets/d2daa57e-7d9c-4478-82b4-572747d37477)" width="300" alt="App Screenshot 4"</td>
+    <td><img src="https://github.com/user-attachments/assets/99d895f7-ff1a-45a1-953b-188f831ba2ce" width="300" alt="App Screenshot 3"></td>
+    <td><img src="https://github.com/user-attachments/assets/d2daa57e-7d9c-4478-82b4-572747d37477" width="300" alt="App Screenshot 4"></td>
   </tr>
 </table>
 
