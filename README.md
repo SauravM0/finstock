@@ -47,17 +47,14 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 ---
 
-## 📚 Resources
-
-* 🚀 [Write Your First Flutter App (Codelab)](https://docs.flutter.dev/get-started/codelab)
-* 🍳 [Flutter Cookbook – Useful Samples](https://docs.flutter.dev/cookbook)
-* 📘 [Flutter Documentation & API Reference](https://docs.flutter.dev/)
-
----
-
 ## 🧑‍💻 About the Author
 
-**Saurav** – Passionate about empowering investors with the power of AI in finance.
+**Super Sayin** – A passionate team of four dedicated to merging finance and AI to empower everyday investors.
+
+* **Member 1:** Janhavi Deshmukh - [LinkedIn](https://www.linkedin.com/in/janhavi-deshmukh-733571291?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+* **Member 2:** Chaitanya Ranpise - [LinkedIn](https://www.linkedin.com/in/chaitanya-ranpise-34a5b227b?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+* **Member 3:** Harish Sonwale - [LinkedIn](https://www.linkedin.com/in/harish-sonwale?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+* **Member 4:** Saurav Madake - [LinkedIn](https://www.linkedin.com/in/saurav-madake/)
 
 > _"Trading made smarter, simpler, and safer — for everyone."_ ✨
 
