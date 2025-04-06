@@ -43,10 +43,10 @@ Your tone should be professional but conversational, knowledgeable but accessibl
 ''';
 
   // Fixed API key - replace with your actual Gemini API key
-  static const String _fixedApiKey = 'AIzaSyDm8A18yURmiRECFiI47Bn9zcTDGwNF2n0';
+  static const String _fixedApiKey = 'API key';
 
   // Backup API key if the first one fails - replace with a different valid API key
-  static const String _backupApiKey = 'AIzaSyDm8A18yURmiRECFiI47Bn9zcTDGwNF2n0';
+  static const String _backupApiKey = 'API key';
 
   late GenerativeModel _model;
   final Connectivity _connectivity = Connectivity();
