@@ -1,8 +1,5 @@
 # 💹 FinStock: AI-Powered Investing & Trading Bot 🤖📈
 
-**Trade Smarter, Faster, and Safer!** FinStock is your intelligent companion, providing real-time insights and AI-powered signals to navigate the stock market like a pro. 🚀
-
----
 
 ## ✨ Getting Started
 
