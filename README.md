@@ -1,4 +1,4 @@
-# finan
+# finance
 #saurav
 ## Getting Started
 
