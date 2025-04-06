@@ -12,7 +12,7 @@ class ApiKeyService {
       
       if (apiKey == null || apiKey.isEmpty) {
         // Return placeholder API key - user should replace with real one
-        return 'AIzaSyDm8A18yURmiRECFiI47Bn9zcTDGwNF2n0';
+        return 'API key';
       }
       
       return apiKey;
