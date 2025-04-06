@@ -8,7 +8,7 @@
 
 Feeling overwhelmed by trading? FinStock simplifies it with **live market analysis**, **AI trade predictions**, and **fraud detection**. Let's make your investment journey easier! 🤝
 
----
+
 
 ## 🔑 Key Features
 
@@ -19,7 +19,6 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 * 📊 **Technical Indicators:** Includes RSI, MACD, Moving Averages, and more. ⚙️
 * ⚠️ **Fraud Detection:** Alerts for market manipulation and scams. 🚨
 
----
 
 ## 📱 App Screenshots
 
@@ -27,7 +26,7 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 `![Alt text for the image](URL of the image)`
 `![Another alt text for the image](Another URL of the image)`
 
----
+
 
 ## 💡 Why Choose FinStock?
 
@@ -35,14 +34,25 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 * 🛡️ **Smart Risk Management:** Get notified about sharp price drops. 📉
 * ⏱️ **Time Saver:** Instant insights to cut down on analysis time. ⏳
 
----
+
 
 ## 🎬 Watch Our Demo
 
-*(Add the link to your YouTube video here using the following format:)*
-[Watch our FinStock Demo on YouTube](https://youtu.be/S_BxU6phnpo)
+<div align="center">
+  <a href="https://youtu.be/S_BxU6phnpo">
+    <img src="http://i.ytimg.com/vi/4/hqdefault.jpg" alt="FinStock Demo Video" style="width:600px;">
+  </a>
+</div>
 
----
+<br>
+
+Or watch it directly here:
+
+<div align="center">
+<iframe width="560" height="315" src="http://www.youtube.com/embed/4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+
 
 ## 🌱 Future Upgrades
 
@@ -50,7 +60,7 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 * 📚 **Advanced Strategies:** More trading tactics for diverse styles. 🎯
 * 📱 **Mobile App:** Access FinStock on the go! 🚀
 
----
+
 
 ## 🛠️ Technologies Used
 
@@ -60,7 +70,7 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 * 🌐 **TradingView API**
 * 🧪 **Google IDX (AI IDE)**
 
----
+
 
 ## 🧑‍💻 About the Author
 
@@ -73,19 +83,9 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 > _"Trading made smarter, simpler, and safer — for everyone."_ ✨
 
----
+
 
 ## 🤝 Feedback & Contributions
 
 We welcome your feedback, pull requests, and ideas! Let's build the future of trading together. 💬✨
 
----
-
-## ⚙️ Installation
-
-*(Add instructions on how to set up and run FinStock here. For example, if it's a Flutter app, you might include steps to install Flutter and run the app.)*
-
-```bash
-# Example for a Flutter project
-flutter pub get
-flutter run
