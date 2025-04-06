@@ -21,11 +21,26 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 ---
 
+## 📱 App Screenshots
+
+*(Add your app image URLs here using the following format:)*
+`![Alt text for the image](URL of the image)`
+`![Another alt text for the image](Another URL of the image)`
+
+---
+
 ## 💡 Why Choose FinStock?
 
 * 👨‍🎓 **Beginner-Friendly:** Learn with interactive graphs, tips & breakdowns. 📚
 * 🛡️ **Smart Risk Management:** Get notified about sharp price drops. 📉
 * ⏱️ **Time Saver:** Instant insights to cut down on analysis time. ⏳
+
+---
+
+## 🎬 Watch Our Demo
+
+*(Add the link to your YouTube video here using the following format:)*
+[Watch our FinStock Demo on YouTube](YOUR_YOUTUBE_VIDEO_LINK_HERE)
 
 ---
 
@@ -51,10 +66,10 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 **Super Sayin** – A passionate team of four dedicated to merging finance and AI to empower everyday investors.
 
-* **Member 1:** Janhavi Deshmukh - [LinkedIn](https://www.linkedin.com/in/janhavi-deshmukh-733571291?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
-* **Member 2:** Chaitanya Ranpise - [LinkedIn](https://www.linkedin.com/in/chaitanya-ranpise-34a5b227b?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
-* **Member 3:** Harish Sonwale - [LinkedIn](https://www.linkedin.com/in/harish-sonwale?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
-* **Member 4:** Saurav Madake - [LinkedIn](https://www.linkedin.com/in/saurav-madake/)
+* Janhavi Deshmukh - [LinkedIn](https://www.linkedin.com/in/janhavi-deshmukh-733571291?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+* Chaitanya Ranpise - [LinkedIn](https://www.linkedin.com/in/chaitanya-ranpise-34a5b227b?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+* Harish Sonwale - [LinkedIn](https://www.linkedin.com/in/harish-sonwale?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+* Saurav Madake - [LinkedIn](https://www.linkedin.com/in/saurav-madake/)
 
 > _"Trading made smarter, simpler, and safer — for everyone."_ ✨
 
