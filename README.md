@@ -85,3 +85,26 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 We welcome your feedback, pull requests, and ideas! Let's build the future of trading together. 💬✨
 
+---
+
+## ⚙️ Installation
+
+Quick steps to get FinStock running:
+
+1.  **Prerequisites:** Install the [Flutter SDK].
+2.  **Clone:**
+    ```bash
+    git clone REPOSITORY_URL
+    cd FinStock
+    ```
+3.  **Dependencies:**
+    ```bash
+    flutter pub get
+    ```
+4.  **Run:** Connect a device or emulator and run:
+    ```bash
+    flutter run
+    ```
+
+---
+
