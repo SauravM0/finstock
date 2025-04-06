@@ -22,9 +22,11 @@ Feeling overwhelmed by trading? FinStock simplifies it with **live market analys
 
 ## 📱 App Screenshots
 
-*(Add your app image URLs here using the following format:)*
-`![Alt text for the image](URL of the image)`
-`![Another alt text for the image](Another URL of the image)`
+![WhatsApp Image 2025-04-06 at 13 07 42_c7e39190](https://github.com/user-attachments/assets/90cf6c8d-69ba-4d6c-9975-90abadab3649)
+
+![image](https://github.com/user-attachments/assets/4f2906c0-3642-43dd-bec5-79b66d01a51b)
+
+
 
 
 
