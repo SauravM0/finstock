@@ -48,6 +48,12 @@ Trading feels tricky and confusing, right? Our AI Trading Bot is here to simplif
    
    🔹 Gemini
 
+      Google IDX
+
+      Trading View
+    
+   
+
 
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
